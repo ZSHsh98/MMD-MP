@@ -764,12 +764,7 @@ if __name__ == '__main__':
 	parser.add_argument('--cache_dir', type=str, default="./~/.cache")
 	args = parser.parse_args()
 
-	if args.two_sample_test:
-		PATH_exper = 'two_sample_test'
-	elif args.meta_test_flag:
-		PATH_exper = 'meta_test'
-	else:
-		PATH_exper = 'one_sample_test'
+	PATH_exper = 'two_sample_test'
 
 	model_path = f'./{PATH_exper}/HC3-{args.base_model_name}/{args.id}'
 
@@ -863,58 +858,6 @@ if __name__ == '__main__':
 		if args.dataset in ['english', 'german']:
 			preproc_tokenizer = mask_tokenizer
 		
-		if args.random_fills:
-			FILL_DICTIONARY = set()
-			for texts in data.values():
-				for text in texts:
-					FILL_DICTIONARY.update(text.split())
-			FILL_DICTIONARY = sorted(list(FILL_DICTIONARY))
-
-		if not args.meta_test_flag:
-			fea_dic = []
-			for meta_data_name, meta_data in data.items():
-				
-				if meta_data_name!='reddit_eli5':
-
-					train_real = [text for text, label in zip(meta_data['train']['text'], meta_data['train']['label']) if label == 0]
-					train_generated = [text for text, label in zip(meta_data['train']['text'], meta_data['train']['label']) if label == 1]
-
-					train_real = [nltk.sent_tokenize(text) for text in train_real]
-					train_generated = [nltk.sent_tokenize(text) for text in train_generated]
-					
-					train_real = [sen for pa in train_real for sen in pa if 10<len(sen.split())<30]
-					train_generated =[sen for pa in train_generated for sen in pa if 10<len(sen.split())<30]
-					train_length = min(len(train_real), len(train_generated))
-					train_real = train_real[:train_length]
-					train_generated = train_generated[:train_length]
-
-					fea_train_real = fea_get(train_real, max_length=args.max_length)#.to('cpu')
-					fea_train_generated = fea_get(train_generated, max_length=args.max_length)#.to('cpu')
-
-					fea_dic.append({'real':fea_train_real, 'generated':fea_train_generated, 'source':meta_data_name})
-
-				if meta_data_name=='reddit_eli5':
-
-					# Take reddit_eli5 as an example and divide it into 10 parts
-					for i in range(10):
-						train_real = [text for text, label in zip(data['reddit_eli5']['train']['text'], data['reddit_eli5']['train']['label']) if label == 0]
-						train_generated = [text for text, label in zip(data['reddit_eli5']['train']['text'], data['reddit_eli5']['train']['label']) if label == 1]
-
-						train_real = [nltk.sent_tokenize(text) for text in train_real]
-						train_generated = [nltk.sent_tokenize(text) for text in train_generated]
-						
-						train_real = [sen for pa in train_real for sen in pa if 10<len(sen.split())<30]
-						train_generated =[sen for pa in train_generated for sen in pa if 10<len(sen.split())<30]
-						
-						train_length = min(len(train_real), len(train_generated)) // 20  # 将数据集长度除以10，得到每份数据集的长度
-						train_real = train_real[i*train_length:(i+1)*train_length]
-						train_generated = train_generated[i*train_length:(i+1)*train_length]
-
-						fea_train_real = fea_get(train_real, max_length=args.max_length)#.to('cpu')
-						fea_train_generated = fea_get(train_generated, max_length=args.max_length)#.to('cpu')
-
-						fea_dic.append({'real':fea_train_real, 'generated':fea_train_generated, 'source':'reddit_eli5'})
-
 		# Target Dataset
 		fea_train_real_ls = []
 		fea_train_generated_ls = []
@@ -1023,21 +966,7 @@ if __name__ == '__main__':
 				fea_train_real_ls.append(fea_train_real)
 				fea_train_generated_ls.append(fea_train_generated)
 
-				if args.one_senten_flag:
-					real_data = [sen for pa in real for sen in pa if 10<len(sen.split())<30]
-					generated_data =[sen for pa in generated for sen in pa if 10<len(sen.split())<30]
-				elif args.one_par_flag:
-					real_data = real
-					generated_data = generated
-				elif args.senten_par_flag:
-					real_data = real_pa_ls
-					generated_data = generated_pa_ls
-				if args.one_senten_flag:
-					test_lenth = 2000
-				elif args.two_sample_test:
-					test_lenth = test_lenth
-				else:
-					test_lenth = 1000 
+				test_lenth = test_lenth
 
 				text_val_real = real_data_temp_seletced[:args.val_num]
 				text_val_generated = generated_data_temp_seletced[:args.val_num]
@@ -1052,26 +981,6 @@ if __name__ == '__main__':
 				text_single_generated_sen_ls = [ sen for pa in text_single_generated for sen in pa]
 				text_reference = [ sen for pa in text_reference for sen in pa]
 
-				# specifical operation
-				if args.senten_par_flag:
-					# transform the paragraph into the sentences
-					text_val_real_token = real_sent_token[train_real_length:train_real_length+args.val_num]
-					text_val_generated_token = generated_sent_token[train_real_length:train_real_length+args.val_num]					
-					text_reference_token = real_sent_token[train_real_length+args.val_num + test_lenth : train_real_length+args.val_num + test_lenth + args.reference_par_num]
-					text_real_token = real_sent_token[train_real_length+args.val_num : train_real_length+args.val_num + test_lenth]
-					text_generated_token = generated_sent_token[train_real_length+args.val_num: train_real_length+args.val_num +test_lenth]
-
-					text_val_real_sen = [sen for pa in text_val_real_token for sen in pa if 10<len(sen.split())<30]
-					train_generated_sen =[sen for pa in text_val_generated_token for sen in pa if 10<len(sen.split())<30]
-					text_reference_sen = [sen for pa in text_reference_token for sen in pa if 10<len(sen.split())<30][:args.reference_par_num]
-					text_real_sen = [sen for pa in text_real_token for sen in pa if 10<len(sen.split())<30][:test_lenth]
-					text_generated_sen = [sen for pa in text_generated_token for sen in pa if 10<len(sen.split())<30][:test_lenth]
-
-					text_val_real = text_val_real + text_val_real_sen
-					text_val_generated = text_val_generated + train_generated_sen
-					text_reference = text_reference #+ text_reference_sen
-					text_real = text_real + text_real_sen
-					text_generated = text_generated + text_generated_sen
 
 				fea_real = [fea_get(pa_ls, max_length=args.max_length,print_fea_dim=False) for pa_ls in text_real]
 				fea_generated = [fea_get(pa_ls, max_length=args.max_length,print_fea_dim=False) for pa_ls in text_generated]
@@ -1123,35 +1032,6 @@ if __name__ == '__main__':
 		print("val_generated:", len(val_generated))
 		print("val_sing_real:", len(val_sing_real))
 		print("val_sing_generated:", len(val_sing_generated))
-
-		if not args.skip_baselines:
-			# assert len(args.target_datasets)==1 and len(args.text_generated_model_name)==1
-			assert args.scoring_model_name
-			args.dataset = args.target_datasets
-			for scoring_model_name in args.scoring_model_name:
-				print(f'Loading SCORING model {scoring_model_name}...')
-				del base_model
-				del base_tokenizer
-				torch.cuda.empty_cache()
-				base_model, base_tokenizer = load_base_model_and_tokenizer(scoring_model_name)
-				load_base_model()  # Load again because we've deleted/replaced the old model
-
-				data = {"original":text_single_real_sen_ls[:1000], "sampled":text_single_generated_sen_ls[:1000]}
-				baseline_outputs = []
-				baseline_outputs = [run_baseline_threshold_experiment(get_ll, "likelihood", n_samples=n_samples)]
-				if args.openai_model is None:
-					rank_criterion = lambda text: -get_rank(text, log=False)
-					baseline_outputs.append(run_baseline_threshold_experiment(rank_criterion, "rank", n_samples=n_samples))
-					logrank_criterion = lambda text: -get_rank(text, log=True)
-					baseline_outputs.append(run_baseline_threshold_experiment(logrank_criterion, "log_rank", n_samples=n_samples))
-					entropy_criterion = lambda text: get_entropy(text)
-					baseline_outputs.append(run_baseline_threshold_experiment(entropy_criterion, "entropy", n_samples=n_samples))
-			baseline_outputs.append(eval_supervised(data, model='roberta-base-openai-detector'))
-			baseline_outputs.append(eval_supervised(data, model='Hello-SimpleAI/chatgpt-detector-roberta', pos_bit=1))
-			del base_model
-			del base_tokenizer
-			print(baseline_outputs)
-			exit(0)
 
 		train_batch_size = args.train_batch_size
 		auroc_list = []
@@ -1297,65 +1177,21 @@ if __name__ == '__main__':
 		maml = Meta(args, config).to(device)
 		
 		id = args.id
-		if not args.meta_test_flag:
-			for step in range(args.meta_epochs):
-				x_spt, y_spt, x_qry, y_qry = get_metadata(args,fea_dic)
+		net = mmdPreModel(config=config, num_mlp=args.num_mlp, transformer_flag=args.transformer_flag, num_hidden_layers=args.num_hidden_layers).cuda()
+		print('==> loading meta_model from checkpoint..')
+		# model_path = f'./net_D/resnet101/{id}' 
+		print("No meta learing!")
+		sigma, sigma0_u, ep  = maml.sigmaOPT ** 2, maml.sigma0OPT ** 2, maml.epsilonOPT ** 2
+		if args.MMDO_flag:
+			ep = torch.ones(1).to('cuda', torch.float)
+		print('==> testing from the loaded checkpoint..')
+		num_target = len(fea_real)//test_lenth
 
-				x_spt, y_spt, x_qry, y_qry = x_spt.to(device), y_spt.to(device), x_qry.to(device), y_qry.to(device)
-				
-				# train meta kernels
-				J_value, net, sigma, sigma0_u, ep = maml(x_spt, y_spt, x_qry, y_qry)
-				if step % 1 == 0:
-					print('step:', step, '\ttraining J value:', J_value.item())
-					test(step, meta_save_model_flag='meta_')
-			test(step)
-			print(f"Best auroc is {auroc_value_best}!")
-			# exit(0)
-
-			if args.meta_best_model_flag:
-				print('==> loading meta_best_model from checkpoint..')
-				# model_path = f'./net_D/resnet101/{id}' 
-				model_path = f'./{PATH_exper}/HC3-{args.base_model_name}/{id}'
-				assert os.path.isdir(model_path), 'Error: no checkpoint directory found!'
-				checkpoint = torch.load(model_path + '/'+ 'meta_' + 'best_ckpt.pth')
-				net.load_state_dict(checkpoint['net'])
-				sigma, sigma0_u, ep  = checkpoint['sigma'], checkpoint['sigma0_u'], checkpoint['ep']
-				print('==> testing from the loaded checkpoint..')
-				test(step)
-		else:
-			net = mmdPreModel(config=config, num_mlp=args.num_mlp, transformer_flag=args.transformer_flag, num_hidden_layers=args.num_hidden_layers).cuda()
-			print('==> loading meta_model from checkpoint..')
-			# model_path = f'./net_D/resnet101/{id}' 
-			if not args.no_meta_flag:
-				model_path = f'./{PATH_exper}/HC3-{args.base_model_name}/{id}'
-				if args.id_load: 
-					if not args.pretaining:
-						model_path = f'./{PATH_exper}/HC3-{args.base_model_name}/{args.id_load}'
-					else:
-						model_path = f'./net_MMD/HC3-{args.base_model_name}/{args.id_load}'
-				assert os.path.isdir(model_path), 'Error: no checkpoint directory found!'
-				if not args.pretaining:
-					checkpoint = torch.load(model_path + '/'+ 'meta_' + 'best_ckpt.pth')
-				else:
-					checkpoint = torch.load(model_path + '/'+ 'best_ckpt.pth')
-				net.load_state_dict(checkpoint['net'])
-				if args.meta_sigma_use:
-					sigma, sigma0_u, ep  = checkpoint['sigma'], checkpoint['sigma0_u'], checkpoint['ep']
-				else:
-					sigma, sigma0_u, ep  = maml.sigmaOPT ** 2, maml.sigma0OPT ** 2, maml.epsilonOPT ** 2
-			else:
-				print("No meta learing!")
-				sigma, sigma0_u, ep  = maml.sigmaOPT ** 2, maml.sigma0OPT ** 2, maml.epsilonOPT ** 2
-				if args.MMDO_flag:
-					ep = torch.ones(1).to('cuda', torch.float)
-			print('==> testing from the loaded checkpoint..')
-			num_target = len(fea_real)//test_lenth
-
-			power_ls = []
-			for i in range(num_target):
-				power = two_sample_test(0, fea_real_ls=fea_real[i*test_lenth:(i+1)*test_lenth], fea_generated_ls=fea_generated[i*test_lenth:(i+1)*test_lenth],test_flag = True,N=10)
-				power_ls.append(power)
-			print("average power_value:", sum(power_ls)/len(power_ls))
+		power_ls = []
+		for i in range(num_target):
+			power = two_sample_test(0, fea_real_ls=fea_real[i*test_lenth:(i+1)*test_lenth], fea_generated_ls=fea_generated[i*test_lenth:(i+1)*test_lenth],test_flag = True,N=10)
+			power_ls.append(power)
+		print("average power_value:", sum(power_ls)/len(power_ls))
 
 		device = 'cuda' if torch.cuda.is_available() else 'cpu'
 		# Initialize parameters
@@ -1367,16 +1203,7 @@ if __name__ == '__main__':
 		sigma0OPT.requires_grad = True
 
 		sigma, sigma0_u, ep = None, None, None
-		if not args.no_meta_flag:
-			optimizer = torch.optim.Adam(
-				[ {'params': net.parameters(), 'lr': args.target_mlp_lr}, # Set the learning rate of the linear layer
-				{'params': [epsilonOPT, sigmaOPT, sigma0OPT], 'lr': args.lr} # Set the learning rate of the original network
-					])
-		else:
-			if args.MMDO_flag:
-				optimizer = torch.optim.Adam( [sigmaOPT] , lr=args.lr)
-			else:
-				optimizer = torch.optim.Adam(list(net.parameters())+ [epsilonOPT] + [sigmaOPT] + [sigma0OPT], lr=args.lr)
+		optimizer = torch.optim.Adam(list(net.parameters())+ [epsilonOPT] + [sigmaOPT] + [sigma0OPT], lr=args.lr)
 		epochs = args.epochs
 		train_batch_size = args.train_batch_size
 
@@ -1416,29 +1243,6 @@ if __name__ == '__main__':
 			
 			print(f"epoch:{epoch}, mmd_value_temp:{mmd_value_temp.item()}, STAT_u:{STAT_u.item()}")
 			return sigma, sigma0_u, ep
-		
-
-
-		def save_auroc():
-			fig, ax = plt.subplots()
-
-			# Draw a line chart
-			ax.plot(auroc_list)
-
-			# Add tags and titles
-			ax.set_xlabel('Epochs')
-			ax.set_ylabel('AUROC')
-			ax.set_title('AUROC over Epochs')
-
-			ax.set_xticks(range(0, len(auroc_list) + 1, 1))
-			ax.set_xticklabels(range(4, (len(auroc_list)+1)*5 ,5))
-
-			# Save graphics to specified path
-			model_path = f'./{PATH_exper}/HC3-{args.base_model_name}/{id}'
-			if not os.path.isdir(model_path):
-				os.makedirs(model_path, exist_ok=True)
-			plt.savefig(f'{model_path}/auroc.png')
-			plt.close()
 
 		id = args.id
 		start_epoch = 0
@@ -1460,7 +1264,6 @@ if __name__ == '__main__':
 						fea_train_real = fea_train_real0
 						sigma, sigma0_u, ep =train(epoch)
 				print("train time:",time.time()-time0)
-				# save_auroc()
 				time0 = time.time()
 				if (epoch+1)%1==0:
 					power = two_sample_test(epoch, fea_real_ls= val_real, fea_generated_ls= val_generated,N=10,test_flag = True)
@@ -1495,7 +1298,9 @@ if __name__ == '__main__':
 			checkpoint = torch.load(model_path + '/'+ 'best_ckpt.pth')
 			net.load_state_dict(checkpoint['net'])
 			sigma, sigma0_u, ep  = checkpoint['sigma'], checkpoint['sigma0_u'], checkpoint['ep']
-			test(epoch)
+			# test(epoch)
+			auroc_value = test(epoch, fea_real= val_sing_real, fea_generated= val_sing_generated,test_flag = True)
+			power = two_sample_test(epoch)
 		all_power_list.append(np.round(power,6))
 		all_aruoc_list.append(np.round(auroc_value,6))
 		print(f"The best power list is {all_power_list}!")
