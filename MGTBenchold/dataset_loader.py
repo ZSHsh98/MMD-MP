@@ -12,7 +12,7 @@ DATASETS = ['meta_HC3', 'HC3', 'TruthfulQA', 'SQuAD1', 'SQuAD2',
 			'NarrativeQA', "TruthfulQA_adv1", "TruthfulQA_adv2"]
 
 dataset_path_dit={
-	'HC3': '/mnt/cephfs/dataset/zhangshuhai/backup20240107/detect-gpt-gitHub/dataset/H3C'
+	'HC3':'/mnt/cephfs/dataset/zhangshuhai/backup20240107/detect-gpt-tmp/pretrain_model/HC3'
 }
 
 import re
@@ -57,8 +57,9 @@ def process_text_truthfulqa_adv(text):
 def load_HC3(cache_dir):
 	# 设置代理
 
-	d = datasets.load_dataset('Hello-SimpleAI/HC3',
-							  name='all', cache_dir=cache_dir)
+	# d = datasets.load_dataset('Hello-SimpleAI/HC3',
+	# 						  name='all', cache_dir=cache_dir)
+	d = datasets.load_from_disk("/mnt/cephfs/dataset/zhangshuhai/backup20240107/detect-gpt-tmp/pretrain_model/HC3")
 
 	d = d['train']
  
@@ -96,8 +97,9 @@ def load_HC3(cache_dir):
 
 @timeit
 def load_meta_HC3(cache_dir):
-	d = datasets.load_dataset('Hello-SimpleAI/HC3',
-							  name='all', cache_dir=cache_dir)
+	# d = datasets.load_dataset('Hello-SimpleAI/HC3',
+	# 						  name='all', cache_dir=cache_dir)
+	d = datasets.load_from_disk("/mnt/cephfs/dataset/zhangshuhai/backup20240107/detect-gpt-tmp/pretrain_model/HC3")
 	d = d['train']
 	# filtered_d = [_ for _ in d if (len(_['human_answers']) > 0 and len(_['chatgpt_answers']) > 0 and len(_['human_answers'][0].split()) > 5 and len(
 	# 	_['chatgpt_answers'][0].split()) > 5 and len(_['human_answers'][0].split()) < 150 and len(_['chatgpt_answers'][0].split()) < 150)]

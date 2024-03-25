@@ -49,83 +49,83 @@ conda env create -f detectGPT.yml
 
 <!-- # generate nature samples -->
 ```
-CUDA_VISIBLE_DEVICES=0 
-python run_meta_mmd_trans.py 
---id 10001 
---sigma0 55 
---lr 0.00005  
---no_meta_flag   
---n_samples 3900 
---target_senten_num 3000 
---val_num 50 
---sigma 30 
---max_length  100 
---trial_num 3 
---num_hidden_layers 1 
---target_datasets HC3 
---text_generated_model_name chatGPT 
---base_model_name roberta-base-openai-detector 
---skip_baselines 
---mask_flag 
---transformer_flag 
---meta_test_flag 
---epochs 100 
---two_sample_test
+CUDA_VISIBLE_DEVICES=0 \
+python run_meta_mmd_trans.py \ 
+--id 10001 \ 
+--sigma0 55 \ 
+--lr 0.00005 \ 
+--no_meta_flag \   
+--n_samples 3900 \ 
+--target_senten_num 3000 \ 
+--val_num 50 \ 
+--sigma 30 \ 
+--max_length  100 \ 
+--trial_num 3 \ 
+--num_hidden_layers 1 \ 
+--target_datasets HC3 \ 
+--text_generated_model_name chatGPT \ 
+--base_model_name roberta-base-openai-detector \ 
+--skip_baselines \ 
+--mask_flag \ 
+--transformer_flag \ 
+--meta_test_flag \ 
+--epochs 100 \ 
+--two_sample_test \
 ```
 
 - Select the best model through best_auroc:
 ```
-CUDA_VISIBLE_DEVICES=1 
-python run_meta_mmd_trans_auroc.py 
---id 10002 
---sigma0 40 
---lr 0.00005  
---no_meta_flag   
---n_samples 3900 
---target_senten_num 3000 
---val_num 50 
---sigma 30 
---max_length 100 
---trial_num 3 
---num_hidden_layers 1 
---target_datasets HC3 
---text_generated_model_name chatGPT 
---base_model_name roberta-base-openai-detector 
---skip_baselines 
---mask_flag 
---transformer_flag 
---meta_test_flag 
---epochs 100 
---two_sample_test
+CUDA_VISIBLE_DEVICES=1 \ 
+python run_meta_mmd_trans_auroc.py \ 
+--id 10002 \ 
+--sigma0 40 \ 
+--lr 0.00005 \  
+--no_meta_flag \   
+--n_samples 3900 \ 
+--target_senten_num 3000 \ 
+--val_num 50 \ 
+--sigma 30 \ 
+--max_length 100 \ 
+--trial_num 3 \ 
+--num_hidden_layers 1 \
+--target_datasets HC3 \ 
+--text_generated_model_name chatGPT \ 
+--base_model_name roberta-base-openai-detector \ 
+--skip_baselines \ 
+--mask_flag \ 
+--transformer_flag \ 
+--meta_test_flag \ 
+--epochs 100 \ 
+--two_sample_test \
 ```
 
 **Testing MMD-MP.**
 - Add a command-line argument **--test_flag** to enable the testing functionality, allowing for the evaluation of the checkpoint corresponding to the specified **id**:
 
 ```
-CUDA_VISIBLE_DEVICES=0 
-python run_meta_mmd_trans.py 
---test_flag
---id 10001 
---sigma0 55 
---lr 0.00005  
---no_meta_flag   
---n_samples 3900 
---target_senten_num 3000 
---val_num 50 
---sigma 30 
---max_length  100 
---trial_num 3 
---num_hidden_layers 1 
---target_datasets HC3 
---text_generated_model_name chatGPT 
---base_model_name roberta-base-openai-detector 
---skip_baselines 
---mask_flag 
---transformer_flag 
---meta_test_flag 
---epochs 100 
---two_sample_test
+CUDA_VISIBLE_DEVICES=0 \ 
+python run_meta_mmd_trans.py \ 
+--test_flag \
+--id 10001 \ 
+--sigma0 55 \ 
+--lr 0.00005 \  
+--no_meta_flag \   
+--n_samples 3900 \ 
+--target_senten_num 3000 \ 
+--val_num 50 \ 
+--sigma 30 \ 
+--max_length  100 \ 
+--trial_num 3 \ 
+--num_hidden_layers 1 \ 
+--target_datasets HC3 \ 
+--text_generated_model_name chatGPT \ 
+--base_model_name roberta-base-openai-detector \ 
+--skip_baselines \ 
+--mask_flag \ 
+--transformer_flag \ 
+--meta_test_flag \
+--epochs 100 \ 
+--two_sample_test \
 ```
 
 <!-- Training process and result records in ./two_sample_test/HC3-roberta-base-openai-detector/ id -->
