@@ -71,6 +71,7 @@ python run_meta_mmd_trans.py \
 --meta_test_flag \ 
 --epochs 100 \ 
 --two_sample_test \
+--is_yy_zero \
 ```
 
 - Select the best model through best_auroc:
@@ -97,6 +98,7 @@ python run_meta_mmd_trans_auroc.py \
 --meta_test_flag \ 
 --epochs 100 \ 
 --two_sample_test \
+--is_yy_zero \
 ```
 
 **Testing MMD-MP.**
