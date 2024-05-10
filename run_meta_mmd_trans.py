@@ -496,9 +496,9 @@ def load_HC3(data_o):
 
 	# keep only examples with <= 512 tokens according to mask_tokenizer
 	# this step has the extra effect of removing examples with low-quality/garbage content
-	tokenized_data = preproc_tokenizer(long_train_real)
+	tokenized_data = preproc_tokenizer(long_train_real, truncation=True, max_length=preproc_tokenizer.model_max_length)
 	long_train_real = [x for x, y in zip(long_train_real, tokenized_data["input_ids"]) if len(y) <= 512]
-	tokenized_data = preproc_tokenizer(long_train_generated)
+	tokenized_data = preproc_tokenizer(long_train_generated, truncation=True, max_length=preproc_tokenizer.model_max_length)
 	long_train_generated = [x for x, y in zip(long_train_generated, tokenized_data["input_ids"]) if len(y) <= 512]
 
 	# print stats about remainining data
