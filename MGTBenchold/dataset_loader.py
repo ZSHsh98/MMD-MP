@@ -53,13 +53,12 @@ def process_text_truthfulqa_adv(text):
 		text = text[start_idx:]
 	return text
 
-@timeit#自动计算函数的运行时间
+@timeit
 def load_HC3(cache_dir):
-	# 设置代理
 
-	# d = datasets.load_dataset('Hello-SimpleAI/HC3',
-	# 						  name='all', cache_dir=cache_dir)
-	d = datasets.load_from_disk("/mnt/cephfs/dataset/zhangshuhai/backup20240107/detect-gpt-tmp/pretrain_model/HC3")
+	d = datasets.load_dataset('Hello-SimpleAI/HC3',
+							  name='all', cache_dir=cache_dir)
+	# d = datasets.load_from_disk("/mnt/cephfs/dataset/zhangshuhai/backup20240107/detect-gpt-tmp/pretrain_model/HC3")
 
 	d = d['train']
  
@@ -150,7 +149,7 @@ def load_TruthfulQA(cache_dir):
 
 	res = []
 	for i in range(len(q)):
-		if len(a_human[i].split()) > 10 and len(a_chat[i].split()) > 10: # 原来是大于1，太短没有意义，改成大于4
+		if len(a_human[i].split()) > 10 and len(a_chat[i].split()) > 10: 
 			res.append([q[i], a_human[i], a_chat[i], c[i]])
 
 	data_new = {
@@ -169,7 +168,7 @@ def load_TruthfulQA(cache_dir):
 
 	total_num = len(res)
 	for i in tqdm.tqdm(range(total_num), desc="parsing data"):
-		if i < total_num * 0.1: #原来是0.8，由于不训练，改成0.01	
+		if i < total_num * 0.1: 
 			data_partition = 'train'
 		else:
 			data_partition = 'test'
